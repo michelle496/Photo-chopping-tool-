@@ -173,7 +173,8 @@
                 cropper = new Cropper(image, {
                     aspectRatio: 1,
                     viewMode: 1,
-                    dragMode: 'move',
+                    dragMode: 'none',
+                    zoomable: false,
                     cropBoxResizable: false,
                     autoCropArea: 0.7,
                     ready() {
@@ -213,4 +214,5 @@
 </script>
 
 </body>
+
 </html>
