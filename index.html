@@ -40,7 +40,6 @@
         h1 { font-size: 28px; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.5px; }
         p.subtitle { color: #86868B; margin-bottom: 30px; font-size: 16px; }
 
-        /* 上传区域定制 */
         .file-upload {
             position: relative;
             display: inline-block;
@@ -66,14 +65,13 @@
 
         .custom-file-btn:hover { background: #D2D2D7; }
 
-        /* 裁剪容器 */
         .cropper-wrapper {
             width: 100%;
             height: 500px;
             background: #000;
             border-radius: 16px;
             overflow: hidden;
-            display: none; /* 初始隐藏 */
+            display: none; 
             margin-top: 20px;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
         }
@@ -85,7 +83,6 @@
             justify-content: center;
         }
 
-        /* 按钮美化 */
         .btn {
             padding: 14px 32px;
             border-radius: 14px;
@@ -98,17 +95,11 @@
         }
 
         .btn:active { transform: scale(0.96); }
-
         .btn-primary { background: var(--primary-color); color: white; }
         .btn-primary:hover { background: #0062CC; }
-
-        .btn-success { 
-            background: var(--success-color); color: white; 
-            text-decoration: none; line-height: 1.2;
-        }
+        .btn-success { background: var(--success-color); color: white; text-decoration: none; line-height: 1.2; }
         .btn-success:hover { background: #28A745; }
 
-        /* 底部提示 */
         .footer-tips {
             margin-top: 30px;
             padding-top: 20px;
@@ -118,7 +109,6 @@
             font-size: 13px;
             color: #86868B;
         }
-
         .tip-item { display: flex; align-items: center; gap: 6px; }
     </style>
 </head>
@@ -159,9 +149,24 @@
     const downloadBtn = document.getElementById('downloadBtn');
     let cropper;
 
+    // --- 【1. 核心埋点上报函数】 ---
+    function track(eventName) {
+        const data = JSON.stringify({
+            event: eventName,
+            time: new Date().toLocaleString()
+        });
+        // 注意：此处 URL 需对应你启动的后端地址
+        navigator.sendBeacon('http://localhost:3000/api/track', data);
+        console.log(`[Data Tracking]: ${eventName}`);
+    }
+
+    // --- 【2. 逻辑整合】 ---
     upload.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
+            // 埋点：用户选择了文件
+            track('button_upload_click');
+
             const reader = new FileReader();
             reader.onload = (event) => {
                 image.src = event.target.result;
@@ -173,8 +178,8 @@
                 cropper = new Cropper(image, {
                     aspectRatio: 1,
                     viewMode: 1,
-                    dragMode: 'none',
-                    zoomable: false,
+                    dragMode: 'move', // 改为 move，方便用户拖动
+                    zoomable: true,
                     cropBoxResizable: false,
                     autoCropArea: 0.7,
                     ready() {
@@ -206,13 +211,16 @@
             downloadBtn.download = '51mm_Visa_Photo.jpg';
             downloadBtn.style.display = 'inline-block';
             
-            // 按钮动效提示
             cropBtn.innerText = '已生成！';
             setTimeout(() => { cropBtn.innerText = '重新生成'; }, 2000);
         }, 'image/jpeg', 1.0);
     });
+
+    // 埋点：用户点击了下载按钮
+    downloadBtn.addEventListener('click', () => {
+        track('button_download_click');
+    });
 </script>
 
 </body>
-
 </html>
